@@ -1,33 +1,30 @@
 import os
 import numpy as np
-import cv2
+import cv2, time
 
 pwd = os.getcwd()
+def camera():
+    cap = cv2.VideoCapture(0)
 
-print(pwd)
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('output.avi',fourcc, 40.0, (640,480))
 
-cap = cv2.VideoCapture(0)
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret==True:
+            frame = cv2.flip(frame,180)
 
-# Define the codec and create VideoWriter object
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output.avi',fourcc, 20.0, (640,480))
+            # write the flipped frame
+            out.write(frame)
 
-while(cap.isOpened()):
-    ret, frame = cap.read()
-    if ret==True:
-        frame = cv2.flip(frame,0)
-
-        # write the flipped frame
-        out.write(frame)
-
-        cv2.imshow('frame',frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+            if not time.sleep(0.5):
+                break
+        else:
             break
-    else:
-        break
 
-# Release everything if job is finished
-cap.release()
-out.release()
-cv2.destroyAllWindows()
-
+    # Release everything if job is finished
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+camera()
