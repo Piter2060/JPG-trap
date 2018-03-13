@@ -1,30 +1,44 @@
 import os
 import numpy as np
 import cv2, time
+import zipfile
 
 pwd = os.getcwd()
-def camera():
-    cap = cv2.VideoCapture(0)
+files = []
 
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter('output.avi',fourcc, 40.0, (640,480))
+def zip(files_table):
+    zf = zipfile.ZipFile('zipfile_write.zip', mode='a')
+    for file in files_table:
+        zf.write(file)
+    zf.close()
 
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        if ret==True:
-            frame = cv2.flip(frame,180)
+def cam(fr):
+    import cv2
+    camera_port = 0
 
-            # write the flipped frame
-            out.write(frame)
+    # Number of frames to throw away while the camera adjusts to light levels
+    ramp_frames = fr
 
-            if not time.sleep(0.5):
-                break
-        else:
-            break
+    # Now we can initialize the camera capture object with the cv2.VideoCapture class.
+    # All it needs is the index to a camera port.
+    camera = cv2.VideoCapture(camera_port)
 
-    # Release everything if job is finished
-    cap.release()
-    out.release()
-    cv2.destroyAllWindows()
-camera()
+    # Captures a single image from the camera and returns it in PIL format
+    def get_image():
+        # read is the easiest way to get a full image out of a VideoCapture object.
+        retval, im = camera.read()
+        return im
+
+    # Ramp the camera - these frames will be discarded and are only used to allow v4l2
+    # to adjust light levels, if necessary
+    for i in range(ramp_frames):
+        temp = get_image()
+    camera_capture = get_image()
+    file = "test_image_" + str(fr) + ".jpg"
+    files.append(file)
+    cv2.imwrite(file, camera_capture)
+    del (camera)
+cam(0)
+cam(15)
+cam(30)
+zip(files)
